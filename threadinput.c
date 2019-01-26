@@ -11,13 +11,25 @@
 #define FALSE 0
 #define TRUE 1
 
-char isInput = FALSE;
+enum state {RECEIVED, WAITING, STOP};
+enum state isInput = WAITING;
 char input;
+char stop_input = 'a';
 
 void *readInput(){
-	for(;;){
+	while(isInput != STOP){
+		while(isInput == RECEIVED);
 		if(input = getchar()){
-			isInput = TRUE;
+			if(input == 27){
+				getchar();
+				input = getchar();
+			}
+			if(input == stop_input){
+				isInput = STOP;
+			}
+			else{
+				isInput = RECEIVED;
+			}
 		}
 	}
 }
@@ -27,10 +39,14 @@ int main(){
 	system ("/bin/stty raw");
 	pthread_create(&tid, NULL, readInput, (void *)&tid);
 	for(;;){
-		if(isInput){
-			isInput = FALSE;
+		//do something here while the other thread read input
+		if(isInput == RECEIVED){
 			printf("\n\ryou typed: %c\n\r", input);
 			fflush(stdout);
+			isInput = WAITING;
+		}
+		else if(isInput == STOP){
+			break;
 		}
 	}
 	pthread_exit(NULL); 
