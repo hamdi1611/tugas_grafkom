@@ -11,10 +11,14 @@
 
 #define TRUE 1
 #define FALSE 0
+#define RED 255
+#define GREEN 0
+#define BLUE 0
 #define MAX_SCREEN_WIDTH 1920
 #define MAX_SCREEN_HEIGHT 1080
 #define DELAY 200
 #define DELTA_PIXELS 10
+#define SIZE 100
 char *fbp = 0;
 struct fb_var_screeninfo vinfo;
 struct fb_fix_screeninfo finfo;
@@ -40,6 +44,7 @@ void *read_arrow_key(){
 			}
 		}
 	}
+	return 0;
 }
 
 void put_pixel_RGB24(int x, int y, int r, int g, int b)
@@ -72,7 +77,6 @@ void put_pixel_RGB32(int x, int y, int r, int g, int b)
 }
 
 void draw_line(int x0, int y0, int x1, int y1){
-	int r = 255, g = 0, b = 0;
 	int x_start = x0, x_end = x1, y_start = y0, y_end = y1;
 	char isHigh = TRUE;
 	if(abs(y1 - y0) < abs(x1 - x0)){
@@ -94,13 +98,13 @@ void draw_line(int x0, int y0, int x1, int y1){
 		int D = 2 * dx - dy, x = x_start;
 		for(int y = y_start; y <= y_end; ++y){
 			if(vinfo.bits_per_pixel == 16){
-				put_pixel_RGB16(x, y, r, g, b);
+				put_pixel_RGB16(x, y, RED, GREEN, BLUE);
 			}
 			else if(vinfo.bits_per_pixel == 24){
-				put_pixel_RGB24(x, y, r, g, b);
+				put_pixel_RGB24(x, y, RED, GREEN, BLUE);
 			}
 			else if(vinfo.bits_per_pixel == 32){
-				put_pixel_RGB32(x, y, r, g, b);
+				put_pixel_RGB32(x, y, RED, GREEN, BLUE);
 			}
 			if(D > 0){
 				x = x + xi;
@@ -118,13 +122,13 @@ void draw_line(int x0, int y0, int x1, int y1){
 		int D = 2 * dy - dx, y = y_start;
 		for(int x = x_start; x <= x_end; ++x){
 			if(vinfo.bits_per_pixel == 16){
-				put_pixel_RGB16(x, y, r, g, b);
+				put_pixel_RGB16(x, y, RED, GREEN, BLUE);
 			}
 			else if(vinfo.bits_per_pixel == 24){
-				put_pixel_RGB24(x, y, r, g, b);
+				put_pixel_RGB24(x, y, RED, GREEN, BLUE);
 			}
 			else if(vinfo.bits_per_pixel == 32){
-				put_pixel_RGB32(x, y, r, g, b);
+				put_pixel_RGB32(x, y, RED, GREEN, BLUE);
 			}
 			if(D > 0){
 				y = y + yi;
@@ -133,6 +137,47 @@ void draw_line(int x0, int y0, int x1, int y1){
 			D += 2 * dy;
 		}
 	}
+}
+
+void draw_ship(int x, int y, int size){
+	int x0_high = x - size / 2, x1_high = x + size / 2;
+	int x0_low = x - size / 3, x1_low = x + size / 3;
+	draw_line(x0_high, y, x1_high, y);
+	draw_line(x0_low, y + size / 2, x1_low, y + size / 2);
+	draw_line(x0_high, y, x0_low, y + size / 2);
+	draw_line(x1_low, y + size / 2, x1_high, y);
+	draw_line(x - size / 4, y, x - size / 4, y - size / 4);
+	draw_line(x + size / 4, y, x + size / 4, y - size / 4);
+	draw_line(x - size / 4, y - size / 4, x + size / 4, y - size / 4);
+	//char left_diag = TRUE, right_diag = TRUE;
+	//if(x0_low < 0){
+		//x0_high = 0;
+		//x0_low = 0;
+		//left_diag = FALSE;
+	//}
+	//else{
+		//if(x0_high < 0){
+			//x0_high = 0;
+		//}
+	//}
+	//if(x1_low >= vinfo.xres){
+		//x1_high = vinfo.xres - 1;
+		//x1_low = vinfo.xres - 1;
+		//right_diag = FALSE;
+	//}
+	//else{
+		//if(x1_high >= vinfo.xres){
+			//x1_high = vinfo.xres - 1;
+		//}
+	//}
+	//draw_line(x0_high, y - size / 2, x1_high, y - size / 2);
+	//draw_line(x0_low, y + size / 2, x1_low, y + size / 2);
+	//if(left_diag){
+		//draw_line(x0_high, y - size / 2, x0_low, y + size / 2);
+	//}
+	//if(right_diag){
+		//draw_line(x1_high, y - size / 2, x1_low, y + size / 2);
+	//}
 }
 
 void clear_fbuffer(){
@@ -181,7 +226,7 @@ int main(int argc, char* argv[])
 		system("setterm -cursor off && /bin/stty raw -echo && clear");
 		int x = vinfo.xres / 2, y = vinfo.yres / 2;
 		clear_fbuffer();
-		draw_line(vinfo.xres / 2, vinfo.yres / 2, 0, 0);
+		draw_ship(vinfo.xres / 2, vinfo.yres / 2, SIZE);
 		pthread_create(&tid, NULL, read_arrow_key, (void *)&tid);
 		for(;;){
 			if(isInput == RECEIVED){
@@ -189,19 +234,19 @@ int main(int argc, char* argv[])
 				switch(input){
 					case 'C' :
 						x += DELTA_PIXELS;
-						if(x >= vinfo.xres){
-							x = vinfo.xres - 1;
+						if(x + SIZE / 2 >= vinfo.xres){
+							x = vinfo.xres - 1 - SIZE / 2;
 						}
 						clear_fbuffer();
-						draw_line(x, y, 0, 0);
+						draw_ship(x, y, SIZE);
 						break;
 					case 'D' :
 						x -= DELTA_PIXELS;
-						if(x < 0){
-							x = 0;
+						if(x - SIZE / 2 < 0){
+							x = SIZE / 2;
 						}
 						clear_fbuffer();
-						draw_line(x, y, 0, 0);
+						draw_ship(x, y, SIZE);
 						break;
 				}
 				isInput = WAITING;
