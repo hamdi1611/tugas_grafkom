@@ -161,12 +161,48 @@ void draw_peluru(int x, int y, int size){
     draw_line(x + 5, y - size / 4 - 5, x + 5 , y - size / 4 + 5);
 }
 
-void move_peluru_tengah(int arr[5][2], int size){
+void move_peluru(int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2], int arr4[5][2], int size){
     for(int i = 0; i < 5; i++)
     {
-        if ((arr[i][0] > 50) && (arr[i][1] > 50)) {
-            draw_peluru(arr[i][0], arr[i][1], size);
-            arr[i][1] = arr[i][1] - 4;
+		int x,y;
+
+		x = arr0[i][0];
+		y = arr0[i][1];
+        if ((x > 50) && (y > 50)) {
+            draw_peluru(x, y, size);
+            arr0[i][1] = y - 7;
+        }
+
+		x = arr1[i][0];
+		y = arr1[i][1];
+        if ((x > 50) && (y > 50)) {
+            draw_peluru(x, y, size);
+			arr1[i][0] = x + 1;
+            arr1[i][1] = y - 6;
+        }
+
+		x = arr2[i][0];
+		y = arr2[i][1];
+        if ((x > 50) && (y > 50)) {
+            draw_peluru(x, y, size);
+			arr2[i][0] = x + 2;
+            arr2[i][1] = y - 5;
+        }
+
+		x = arr3[i][0];
+		y = arr3[i][1];
+        if ((x > 50) && (y > 50)) {
+            draw_peluru(x, y, size);
+            arr3[i][0] = x - 1;
+            arr3[i][1] = y - 6;
+        }
+
+		x = arr4[i][0];
+		y = arr4[i][1];
+        if ((x > 50) && (y > 50)) {
+            draw_peluru(x, y, size);
+            arr4[i][0] = x - 2;
+            arr4[i][1] = y - 5;
         }
     }
 }
@@ -193,13 +229,6 @@ int main(int argc, char* argv[])
     int fbfd = 0;
     struct fb_var_screeninfo orig_vinfo;
     long int screensize = 0;
-
-    int peluru_kanan2[] = {0, 0, 0, 0, 0}; // -2, +2
-    int peluru_kanan1[] = {0, 0, 0, 0, 0}; // -1, +3
-    int peluru_tengah[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}; // +0, +4
-    int peluru_kiri1[]  = {0, 0, 0, 0, 0}; // +1, +3
-    int peluru_kiri2[]  = {0, 0, 0, 0, 0}; // +2, +2
-
 
     // Open the file for reading and writing
     fbfd = open("/dev/fb0", O_RDWR);
@@ -237,6 +266,15 @@ int main(int argc, char* argv[])
 		clear_fbuffer();
 		draw_ship(vinfo.xres / 2, vinfo.yres / 2, SIZE);
 		pthread_create(&tid, NULL, read_arrow_key, (void *)&tid);
+
+		int peluru_kanan2[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+		int peluru_kanan1[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+		int peluru_tengah[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+		int peluru_kiri1[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+		int peluru_kiri2[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+
+		int pesawat[7][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+
 		for(;;){
 			if(isInput == RECEIVED){
 				//do something here while the other thread read input
@@ -246,19 +284,19 @@ int main(int argc, char* argv[])
 						if(x + SIZE / 2 >= vinfo.xres){
 							x = vinfo.xres - 1 - SIZE / 2;
 						}
-						// clear_fbuffer();
-						// draw_ship(x, y, SIZE);
 						break;
 					case 'D' :
 						x -= DELTA_PIXELS;
 						if(x - SIZE / 2 < 0){
 							x = SIZE / 2;
 						}
-						// clear_fbuffer();
-						// draw_ship(x, y, SIZE);
 						break;
                     case 'B' :
                         shoot(x, y, peluru_tengah);
+						shoot(x, y, peluru_kanan1);
+						shoot(x, y, peluru_kanan2);
+						shoot(x, y, peluru_kiri1);
+						shoot(x, y, peluru_kiri2);
                         break;
 				}
 				isInput = WAITING;
@@ -266,11 +304,11 @@ int main(int argc, char* argv[])
 			else if(isInput == STOP){
 				break;
 			}
-            move_peluru_tengah(peluru_tengah, SIZE);
+            move_peluru(peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2, SIZE);
             draw_ship(x, y, SIZE);
 
             //delay
-            for(int i = 0; i < 8000000; i++){}
+            for(int i = 0; i < 9000000; i++){}
             
             clear_fbuffer();
 		}
