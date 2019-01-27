@@ -162,20 +162,22 @@ void draw_peluru(int x, int y, int size){
 }
 
 void move_peluru(int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2], int arr4[5][2], int size){
-    for(int i = 0; i < 5; i++)
-    {
+    for(int i = 0; i < 5; i++) {
 		int x,y;
+		int xmax = 30;
+		int ymin = 30;
+		int ymax = 1800;
 
 		x = arr0[i][0];
 		y = arr0[i][1];
-        if ((x > 50) && (y > 50)) {
+        if ((x > xmax) && (y > ymin) && (y < ymax)) {
             draw_peluru(x, y, size);
             arr0[i][1] = y - 7;
         }
 
 		x = arr1[i][0];
 		y = arr1[i][1];
-        if ((x > 50) && (y > 50)) {
+        if ((x > xmax) && (y > ymin) && (y < ymax)) {
             draw_peluru(x, y, size);
 			arr1[i][0] = x + 1;
             arr1[i][1] = y - 6;
@@ -183,7 +185,7 @@ void move_peluru(int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2],
 
 		x = arr2[i][0];
 		y = arr2[i][1];
-        if ((x > 50) && (y > 50)) {
+        if ((x > xmax) && (y > ymin) && (y < ymax)) {
             draw_peluru(x, y, size);
 			arr2[i][0] = x + 2;
             arr2[i][1] = y - 5;
@@ -191,7 +193,7 @@ void move_peluru(int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2],
 
 		x = arr3[i][0];
 		y = arr3[i][1];
-        if ((x > 50) && (y > 50)) {
+        if ((x > xmax) && (y > ymin) && (y < ymax)) {
             draw_peluru(x, y, size);
             arr3[i][0] = x - 1;
             arr3[i][1] = y - 6;
@@ -199,7 +201,7 @@ void move_peluru(int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2],
 
 		x = arr4[i][0];
 		y = arr4[i][1];
-        if ((x > 50) && (y > 50)) {
+        if ((x > xmax) && (y > ymin) && (y < ymax)) {
             draw_peluru(x, y, size);
             arr4[i][0] = x - 2;
             arr4[i][1] = y - 5;
@@ -216,6 +218,44 @@ void shoot(int x, int y, int arr[5][2]) {
             break;
         }
     }
+}
+
+void fly(int pesawat[7][3], int arr0[5][2], int arr1[5][2], int arr2[5][2], int arr3[5][2], int arr4[5][2]) {
+	int panjang = 10;
+
+	for(int i = 0; i < 7; i++) {
+		if ((pesawat[i][1] > 20) && (pesawat[i][2] > 20)) {
+			draw_line(pesawat[i][1] - panjang, pesawat[i][2], pesawat[i][1] + panjang, pesawat[i][2]);
+		
+			int x = pesawat[i][1];
+			int y = pesawat[i][2];
+
+			// aman
+			if (pesawat[i][0] == 0) {
+				for(int j = 0; j < 5; i++) {
+					if ((y == arr0[j][1]) || (y == arr1[j][1]) || (y == arr2[j][1]) || (y == arr3[j][1]) || (y == arr4[j][1])){
+						if (( (arr0[j][0] <= x+panjang) && (arr0[j][0] >= x-panjang) ) || ( (arr1[j][0] <= x+panjang) && (arr1[j][0] >= x-panjang) ) || ( (arr2[j][0] <= x+panjang) && (arr2[j][0] >= x-panjang) ) || ( (arr3[j][0] <= x+panjang) && (arr3[j][0] >= x-panjang) ) || ( (arr4[j][0] <= x+panjang) && (arr4[j][0] >= x-panjang) )) {
+							pesawat[i][0] = 1;
+						}
+					}
+				}
+				if (pesawat[i][0] == 0) {
+					pesawat[i][1] = pesawat[i][1] + 7;
+				}
+			}
+			// jatuh
+			else {
+				if (pesawat[i][2] > 800) {
+					pesawat[i][0] = 0;
+					pesawat[i][1] = 0;
+					pesawat[i][2] = 0;
+				}
+				else {
+					pesawat[i][2] = pesawat[i][2] - 5;
+				}
+			}
+		}
+	}
 }
 
 void clear_fbuffer(){
@@ -273,7 +313,7 @@ int main(int argc, char* argv[])
 		int peluru_kiri1[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 		int peluru_kiri2[5][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 
-		int pesawat[7][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+		int pesawat[7][3] = {{0, 100, 100}, {0, 100, 70}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
 		for(;;){
 			if(isInput == RECEIVED){
@@ -306,6 +346,7 @@ int main(int argc, char* argv[])
 			}
             move_peluru(peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2, SIZE);
             draw_ship(x, y, SIZE);
+			// fly(pesawat, peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2);
 
             //delay
             for(int i = 0; i < 9000000; i++){}
