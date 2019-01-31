@@ -301,11 +301,11 @@ void clear_fbuffer(){
 	memset(fbp, 0, (vinfo.bits_per_pixel / 8 * vinfo.yres * vinfo.xres));
 }
 
-void coloring() {
+void coloring(unsigned short c1, unsigned int c2) {
 	for(int y = 0; y < 500; y++) {
 		int color = 0;
 		int isline = 0;
-		for(int x = 40; x < vinfo.xres - 40; x++) {
+		for(int x = 0; x < vinfo.xres -1; x++) {
 			if(vinfo.bits_per_pixel == 16){
 				unsigned int pix_offset = x * 3 + y * finfo.line_length;
 				unsigned int pix_offset2 = x * 3 + y * finfo.line_length + 3;
@@ -338,7 +338,7 @@ void coloring() {
 						color = 0;
 					}
 					else {
-						put_pixel_RGB24(x, y, RED, GREEN, BLUE);
+						*((unsigned short*)(fbp + pix_offset)) = c1;
 					}
 				}
 				else {
@@ -361,7 +361,7 @@ void coloring() {
 						color = 0;
 					}
 					else {
-						put_pixel_RGB32(x, y, RED, GREEN, BLUE);
+						*((unsigned int*)(fbp + pix_offset)) = c2;
 					}
 				}
 				else {
@@ -419,6 +419,9 @@ int main(int argc, char* argv[])
     screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
     fbp = (char*)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
 
+	unsigned short c1 = ((RED / 8) * 2048) + ((GREEN / 4) * 32) + (BLUE / 8);
+	unsigned int   c2 = (RED << 16) + (GREEN << 8) + BLUE;
+
     if((int)fbp == -1){
         printf("Failed to mmap.\n");
     }
@@ -470,7 +473,7 @@ int main(int argc, char* argv[])
             draw_ship(x, y, SIZE);
 			fly(pesawat, peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2);
 			move_peluru(peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2, SIZE);
-            
+            coloring(c1, c2);
 
 			if (counter == 50) {
 				add_pesawat(pesawat);
@@ -479,10 +482,9 @@ int main(int argc, char* argv[])
 			else {
 				counter = counter + 1;
 			}
-			coloring();
 
             //delay
-            for(int i = 0; i < 900000; i++){}
+            // for(int i = 0; i < 900000; i++){}
             
             clear_fbuffer();
 		}
