@@ -11,8 +11,8 @@
 
 #define TRUE 1
 #define FALSE 0
-#define RED 255
-#define GREEN 0
+#define RED 0
+#define GREEN 255
 #define BLUE 0
 #define MAX_SCREEN_WIDTH 1920
 #define MAX_SCREEN_HEIGHT 1080
@@ -231,35 +231,37 @@ void fly(int pesawat[7][3], int arr0[5][2], int arr1[5][2], int arr2[5][2], int 
 			int x = pesawat[i][1];
 			int y = pesawat[i][2];
 
+			// Checking peluru
+			for(int j = 0; j < 5; j++) {
+				if ((arr0[j][1] <= y+lebar) && (arr0[j][1] >= y-lebar) && (arr0[j][0] <= x+panjang) && (arr0[j][0] >= x-panjang)) {
+					pesawat[i][0] = 1;
+					arr0[j][0] = 0;
+					arr0[j][1] = 0;
+				}
+				if ((arr1[j][1] <= y+lebar) && (arr1[j][1] >= y-lebar) && (arr1[j][0] <= x+panjang) && (arr1[j][0] >= x-panjang)) {
+					pesawat[i][0] = 1;
+					arr1[j][0] = 0;
+					arr1[j][1] = 0;
+				}
+				if ((arr2[j][1] <= y+lebar) && (arr2[j][1] >= y-lebar) && (arr2[j][0] <= x+panjang) && (arr2[j][0] >= x-panjang)) {
+					pesawat[i][0] = 1;
+					arr2[j][0] = 0;
+					arr2[j][1] = 0;
+				}
+				if ((arr3[j][1] <= y+lebar) && (arr3[j][1] >= y-lebar) && (arr3[j][0] <= x+panjang) && (arr3[j][0] >= x-panjang)) {
+					pesawat[i][0] = 1;
+					arr3[j][0] = 0;
+					arr3[j][1] = 0;
+				}
+				if ((arr4[j][1] <= y+lebar) && (arr4[j][1] >= y-lebar) && (arr4[j][0] <= x+panjang) && (arr4[j][0] >= x-panjang)) {
+					pesawat[i][0] = 1;
+					arr4[j][0] = 0;
+					arr4[j][1] = 0;
+				}
+			}
+
 			// aman
 			if (pesawat[i][0] == 0) {
-				for(int j = 0; j < 5; j++) {
-					if ((arr0[j][1] <= y+lebar) && (arr0[j][1] >= y-lebar) && (arr0[j][0] <= x+panjang) && (arr0[j][0] >= x-panjang)) {
-						pesawat[i][0] = 1;
-						arr0[j][0] = 0;
-						arr0[j][1] = 0;
-					}
-					if ((arr1[j][1] <= y+lebar) && (arr1[j][1] >= y-lebar) && (arr1[j][0] <= x+panjang) && (arr1[j][0] >= x-panjang)) {
-						pesawat[i][0] = 1;
-						arr1[j][0] = 0;
-						arr1[j][1] = 0;
-					}
-					if ((arr2[j][1] <= y+lebar) && (arr2[j][1] >= y-lebar) && (arr2[j][0] <= x+panjang) && (arr2[j][0] >= x-panjang)) {
-						pesawat[i][0] = 1;
-						arr2[j][0] = 0;
-						arr2[j][1] = 0;
-					}
-					if ((arr3[j][1] <= y+lebar) && (arr3[j][1] >= y-lebar) && (arr3[j][0] <= x+panjang) && (arr3[j][0] >= x-panjang)) {
-						pesawat[i][0] = 1;
-						arr3[j][0] = 0;
-						arr3[j][1] = 0;
-					}
-					if ((arr4[j][1] <= y+lebar) && (arr4[j][1] >= y-lebar) && (arr4[j][0] <= x+panjang) && (arr4[j][0] >= x-panjang)) {
-						pesawat[i][0] = 1;
-						arr4[j][0] = 0;
-						arr4[j][1] = 0;
-					}
-				}
 				if (pesawat[i][0] == 0) {
 					pesawat[i][1] = pesawat[i][1] + 7;
 					if (pesawat[i][1] > 1300) {
@@ -271,7 +273,7 @@ void fly(int pesawat[7][3], int arr0[5][2], int arr1[5][2], int arr2[5][2], int 
 			}
 			// jatuh
 			else {
-				if (pesawat[i][2] > 500) {
+				if (pesawat[i][2] > 300) {
 					pesawat[i][0] = 0;
 					pesawat[i][1] = 0;
 					pesawat[i][2] = 0;
@@ -297,6 +299,89 @@ add_pesawat(int pesawat[7][3]) {
 
 void clear_fbuffer(){
 	memset(fbp, 0, (vinfo.bits_per_pixel / 8 * vinfo.yres * vinfo.xres));
+}
+
+void coloring() {
+	for(int y = 0; y < 500; y++) {
+		int color = 0;
+		int isline = 0;
+		for(int x = 40; x < vinfo.xres - 40; x++) {
+			if(vinfo.bits_per_pixel == 16){
+				unsigned int pix_offset = x * 3 + y * finfo.line_length;
+				unsigned int pix_offset2 = x * 3 + y * finfo.line_length + 3;
+				
+				if (color) {
+					if (*((char*)(fbp + pix_offset + 2))) {
+						color = 0;
+					}
+					else {
+						put_pixel_RGB16(x, y, RED, GREEN, BLUE);
+					}
+				}
+				else {
+					if ((*((char*)(fbp + pix_offset + 2)))) {
+						if ((*((char*)(fbp + pix_offset2 + 2)))) {
+							// do nothing
+						}
+						else {
+							color = 1;
+						}
+					}
+				}
+			}
+			else if(vinfo.bits_per_pixel == 24){
+				unsigned int pix_offset = x * 2 + y * finfo.line_length;
+				unsigned int pix_offset2 = x * 2 + y * finfo.line_length + 2;
+				
+				if (color) {
+					if (*((unsigned short*)(fbp + pix_offset))) {
+						color = 0;
+					}
+					else {
+						put_pixel_RGB24(x, y, RED, GREEN, BLUE);
+					}
+				}
+				else {
+					if ((*((unsigned short*)(fbp + pix_offset)))) {
+						if ((*((unsigned short*)(fbp + pix_offset2)))) {
+							// do nothing
+						}
+						else {
+							color = 1;
+						}
+					}
+				}
+			}
+			else if(vinfo.bits_per_pixel == 32){
+				unsigned int pix_offset = x * 4 + y * finfo.line_length;
+				unsigned int pix_offset2 = x * 4 + y * finfo.line_length + 4;
+				
+				if (color) {
+					if (*((unsigned int*)(fbp + pix_offset))) {
+						color = 0;
+					}
+					else {
+						put_pixel_RGB32(x, y, RED, GREEN, BLUE);
+					}
+				}
+				else {
+					if ((*((unsigned int*)(fbp + pix_offset)))) {
+						if ((*((unsigned int*)(fbp + pix_offset2)))) {
+							isline = 1;
+						}
+						else {
+							if (isline) {
+								isline = 0;
+							}
+							else {
+								color = 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 int main(int argc, char* argv[])
@@ -370,11 +455,11 @@ int main(int argc, char* argv[])
 						}
 						break;
                     case 'B' :
-                        shoot(x, y, peluru_tengah);
-						shoot(x, y, peluru_kanan1);
-						shoot(x, y, peluru_kanan2);
-						shoot(x, y, peluru_kiri1);
-						shoot(x, y, peluru_kiri2);
+                        shoot(x, y - 30, peluru_tengah);
+						shoot(x + 15, y - 25, peluru_kanan1);
+						shoot(x + 10, y - 10, peluru_kanan2);
+						shoot(x - 15, y - 25, peluru_kiri1);
+						shoot(x - 10, y - 10, peluru_kiri2);
                         break;
 				}
 				isInput = WAITING;
@@ -382,9 +467,10 @@ int main(int argc, char* argv[])
 			else if(isInput == STOP){
 				break;
 			}
-            move_peluru(peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2, SIZE);
             draw_ship(x, y, SIZE);
 			fly(pesawat, peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2);
+			move_peluru(peluru_tengah, peluru_kanan1, peluru_kanan2, peluru_kiri1, peluru_kiri2, SIZE);
+            
 
 			if (counter == 50) {
 				add_pesawat(pesawat);
@@ -393,9 +479,10 @@ int main(int argc, char* argv[])
 			else {
 				counter = counter + 1;
 			}
+			coloring();
 
             //delay
-            for(int i = 0; i < 9000000; i++){}
+            for(int i = 0; i < 900000; i++){}
             
             clear_fbuffer();
 		}
