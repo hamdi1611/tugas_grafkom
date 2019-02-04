@@ -302,7 +302,7 @@ void clear_fbuffer(){
 }
 
 void coloring(unsigned short c1, unsigned int c2) {
-	for(int y = 0; y < 500; y++) {
+	for(int y = 590; y > 0; y--) {
 		int color = 0;
 		int isline = 0;
 		for(int x = 0; x < vinfo.xres -1; x++) {
